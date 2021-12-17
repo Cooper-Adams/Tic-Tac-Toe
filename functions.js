@@ -1,3 +1,4 @@
+//Player factory. Generates player objects.
 const playerFactory = (marker) => {
     this.marker = marker;
     return {marker};
@@ -8,37 +9,41 @@ const playerFactory = (marker) => {
 const gameBoard = (() => {
     
     //Empty array of size 9, to represent the onscreen Tic Tac Toe board.
-    let gameBoard = Array.from(' '.repeat(9));
+    let Board = Array.from(' '.repeat(9));
 
     //Takes in a position and the current marker, then places that marker
     //at that position on the board.
     function setMarker(position, marker)
     {
-        gameBoard[position] = marker;
+        Board[position] = marker;
     }
 
     function getMarker(position)
     {
-        return gameBoard[position];
+        return Board[position];
     }
 
     //Empties the board so a new game can be initiated.
     function clearBoard()
     {
-        for (let i = 0; i < gameBoard.length; ++i)
+        for (let i = 0; i < Board.length; ++i)
         {
-            gameBoard[i] = " ";
+            Board[i] = " ";
         }
     }
 
     return {setMarker, clearBoard, getMarker};
 }) ();
 
+//Gameflow module. Contains all the logic of progressing and ending the game.
 const gameFlow = (() => {
     //Move counter in case of tie
     let movesMade = 0;
     //Gameover status for when the game ends (win or tie)
     let endOfGame = false;
+
+    let easyAIDif = false;
+    let hardAIDif = false;
 
     //Players will be X and O, with X always going first
     let playerOne = playerFactory('X');
@@ -47,6 +52,83 @@ const gameFlow = (() => {
     //Setting player X as first
     let currentPlayer = Object.assign(playerOne);
 
+    function typeOfAI()
+    {
+        if (easyAIDif == true)
+        {
+            return "Easy";
+        }
+
+        else if (hardAIDif == true)
+        {
+            return "Hard";
+        }
+
+        else
+        {
+            return "None";
+        }
+    }
+
+    //This function contains the logic for the AI when set to Easy difficulty.
+    function easyAI()
+    {
+        while (movesMade != 9)
+        {
+            let position = Math.floor(Math.random() * 9);
+
+            let result = checkPosition(position);
+
+            if (result == " ")
+            {
+                continue;
+            }
+
+            else if (endOfGame == true)
+            {
+                break;
+            }
+
+            else
+            {
+                let result = checkForWin(position, 'O');
+                displayController.placeAIMarker('O', position, result);
+
+                currentPlayer = Object.assign(playerOne);
+                break;
+            }
+        }
+    }
+
+    //This function is called when the Player V Player or Player V AI button
+    //is clicked, and it sets the logic variables to their default states.
+    function resetLogic(typeOfAI)
+    {
+        if (typeOfAI == "Easy") 
+        {
+            easyAIDif = true;
+            hardAIDif = false;
+        }
+
+        else if (typeOfAI == "Hard")
+        {
+            easyAIDif = false;
+            hardAIDif = true;
+        }
+
+        else
+        {
+            easyAIDif = false;
+            hardAIDif = false;
+        }
+
+        endOfGame = false;
+        movesMade = 0;
+        currentPlayer = Object.assign(playerOne);
+    }
+
+    //Checks if the positon selected by the user is free or if the game is
+    //over, and if not it sets the players marker in that position.
     function checkPosition(position)
     {
         if (gameBoard.getMarker(position) != " ")
@@ -56,7 +138,7 @@ const gameFlow = (() => {
 
         else if (endOfGame == true)
         {
-            return " ";
+            return "gameOver";
         }
 
         else
@@ -64,19 +146,7 @@ const gameFlow = (() => {
             movesMade++;
             gameBoard.setMarker(position, currentPlayer.marker);
 
-            if (currentPlayer.marker == 'X')
-            {
-                currentPlayer = Object.assign(playerTwo);
-
-                return playerOne.marker;
-            }
-
-            else
-            {
-                currentPlayer = Object.assign(playerOne);
-
-                return playerTwo.marker;
-            }
+            return currentPlayer.marker;
         }
     }
 
@@ -93,11 +163,13 @@ const gameFlow = (() => {
         {
             if (currentPlayer.marker == 'X')
             {
+                currentPlayer = Object.assign(playerTwo);
                 return "P1";
             }
 
             else
             {
+                currentPlayer = Object.assign(playerOne);
                 return "P2";
             }
         }
@@ -107,11 +179,13 @@ const gameFlow = (() => {
         {
             if (currentPlayer.marker == 'X')
             {
+                currentPlayer = Object.assign(playerTwo);
                 return "P1";
             }
 
             else
             {
+                currentPlayer = Object.assign(playerOne);
                 return "P2";
             }
         }
@@ -121,18 +195,31 @@ const gameFlow = (() => {
         {
             if (currentPlayer.marker == 'X')
             {
+                currentPlayer = Object.assign(playerTwo);
                 return "P1";
             }
 
             else
             {
+                currentPlayer = Object.assign(playerOne);
                 return "P2";
             }
         }
 
-        //Returns 'nowin' if the last move did not result in a win.
+        //Updates the currentPlayer and then returns 'nowin' if the last 
+        //move did not result in a win.
         else
         {
+            if (currentPlayer.marker == 'X')
+            {
+                currentPlayer = Object.assign(playerTwo);  
+            }
+
+            else
+            {
+                currentPlayer = Object.assign(playerOne);
+            }
+
             return "nowin";
         }
     }
@@ -144,9 +231,9 @@ const gameFlow = (() => {
         //If the mark is in the left column, check to the right
         if (pos == 0 || pos == 3 || pos == 6)
         {
-            if (gameBoard.getMarker(pos + 1) == mark)
+            if (gameBoard.getMarker(parseInt(pos) + 1) == mark)
             {
-                if (gameBoard.getMarker(pos + 2) == mark)
+                if (gameBoard.getMarker(parseInt(pos) + 2) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -159,9 +246,9 @@ const gameFlow = (() => {
         //If the mark is in the middle column, check left and right
         else if (pos == 1 || pos == 4 || pos == 7)
         {
-            if (gameBoard.getMarker(pos - 1) == mark)
+            if (gameBoard.getMarker(parseInt(pos) - 1) == mark)
             {
-                if (gameBoard.getMarker(pos + 1) == mark)
+                if (gameBoard.getMarker(parseInt(pos) + 1) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -174,9 +261,9 @@ const gameFlow = (() => {
         //If the mark is in the right column, check to the left
         else if (pos == 2 || pos == 5 || pos == 8)
         {
-            if (gameBoard.getMarker(pos - 1) == mark)
+            if (gameBoard.getMarker(parseInt(pos) - 1) == mark)
             {
-                if (gameBoard.getMarker(pos - 2) == mark)
+                if (gameBoard.getMarker(parseInt(pos) - 2) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -192,9 +279,9 @@ const gameFlow = (() => {
         //If the mark is in the top row, check below in the column
         if (pos == 0 || pos == 1 || pos == 2)
         {
-            if (gameBoard.getMarker(pos + 3) == mark)
+            if (gameBoard.getMarker(parseInt(pos) + 3) == mark)
             {
-                if (gameBoard.getMarker(pos + 6) == mark)
+                if (gameBoard.getMarker(parseInt(pos) + 6) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -207,9 +294,11 @@ const gameFlow = (() => {
         //If the mark is in the middle row, check above and below
         else if (pos == 3 || pos == 4 || pos == 5)
         {
-            if (gameBoard.getMarker(pos - 3) == mark)
+            console.log(gameBoard.getMarker(pos + 3))
+
+            if (gameBoard.getMarker(parseInt(pos) - 3) == mark)
             {
-                if (gameBoard.getMarker(pos + 3) == mark)
+                if (gameBoard.getMarker(parseInt(pos) + 3) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -222,9 +311,9 @@ const gameFlow = (() => {
         //If the mark is in the bottom row, check above in the column
         else if (pos == 6 || pos == 7 || pos == 8)
         {
-            if (gameBoard.getMarker(pos - 3) == mark)
+            if (gameBoard.getMarker(parseInt(pos) - 3) == mark)
             {
-                if (gameBoard.getMarker(pos - 6) == mark)
+                if (gameBoard.getMarker(parseInt(pos) - 6) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -233,8 +322,6 @@ const gameFlow = (() => {
             
             return false;
         }
-
-        return false;
     }
 
     function checkDiagonal(pos, mark)
@@ -244,9 +331,9 @@ const gameFlow = (() => {
         if(pos == 4)
         {
             //Checks the diagonal from the top left to the bottom right.
-            if (gameBoard.getMarker(pos - 4) == mark)
+            if (gameBoard.getMarker(parseInt(pos) - 4) == mark)
             {
-                if (gameBoard.getMarker(pos + 4) == mark)
+                if (gameBoard.getMarker(parseInt(pos) + 4) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -254,9 +341,9 @@ const gameFlow = (() => {
             }
 
             //Checks the diagonal from the top right to the bottom left.
-            if (gameBoard.getMarker(pos - 2) == mark)
+            if (gameBoard.getMarker(parseInt(pos) - 2) == mark)
             {
-                if (gameBoard.getMarker(pos + 2) == mark)
+                if (gameBoard.getMarker(parseInt(pos) + 2) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -270,9 +357,9 @@ const gameFlow = (() => {
         //the top left to bottom right diagonal.
         else if (pos == 8)
         {
-            if (gameBoard.getMarker(pos - 4) == mark)
+            if (gameBoard.getMarker(parseInt(pos) - 4) == mark)
             {
-                if (gameBoard.getMarker(pos - 8) == mark)
+                if (gameBoard.getMarker(parseInt(pos) - 8) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -286,9 +373,9 @@ const gameFlow = (() => {
         //the top left to bottom right diagonal.
         else if (pos == 0)
         {
-            if (gameBoard.getMarker(pos + 4) == mark)
+            if (gameBoard.getMarker(parseInt(pos) + 4) == mark)
             {
-                if (gameBoard.getMarker(pos + 8) == mark)
+                if (gameBoard.getMarker(parseInt(pos) + 8) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -302,9 +389,9 @@ const gameFlow = (() => {
         //the top right to bottom left diagonal.
         else if (pos == 2)
         {
-            if (gameBoard.getMarker(pos + 2) == mark)
+            if (gameBoard.getMarker(parseInt(pos) + 2) == mark)
             {
-                if (gameBoard.getMarker(pos + 4) == mark)
+                if (gameBoard.getMarker(parseInt(pos) + 4) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -318,9 +405,9 @@ const gameFlow = (() => {
         //the top right to bottom left diagonal.
         else if (pos == 6)
         {
-            if (gameBoard.getMarker(pos - 2) == mark)
+            if (gameBoard.getMarker(parseInt(pos) - 2) == mark)
             {
-                if (gameBoard.getMarker(pos - 4) == mark)
+                if (gameBoard.getMarker(parseInt(pos) - 4) == mark)
                 {
                     endOfGame = true;
                     return true;
@@ -333,7 +420,7 @@ const gameFlow = (() => {
         return false;
     }
 
-    return {checkPosition, checkForWin};
+    return {checkPosition, checkForWin, resetLogic, typeOfAI, easyAI};
 }) ();
 
 const displayController = (() => {
@@ -397,19 +484,32 @@ const displayController = (() => {
         }
     }
 
+    //After the AI chooses its spot in the gameFlow object, this function
+    //will place that marker in the corresponding spot on the display.
+    function placeAIMarker(marker, position, result)
+    {
+        boardSquares[position].textContent = marker;
+        updateDisplay('O', result)
+    }
+
     //Calls the checkPosition function in the gameFlow object and places 
     //the return from it if said return is X or O.
     function placeMarker(e)
     {
         let marker = gameFlow.checkPosition(e.target.id);
 
-        if (marker != " ")
+        if (marker == "X" || marker == "O")
         {
             boardSquares[e.target.id].textContent = marker;
 
             let result = gameFlow.checkForWin(e.target.id, marker);
 
             updateDisplay(marker, result);
+
+            if (gameFlow.typeOfAI() == "Easy")
+            {
+                gameFlow.easyAI();
+            }
         }
 
         else
@@ -427,6 +527,7 @@ const displayController = (() => {
         //displayController clearBoard to match.
         gameBoard.clearBoard();
         clearBoard();
+        gameFlow.resetLogic("none");
     })
 
     //Button to play against the AI.
@@ -437,5 +538,8 @@ const displayController = (() => {
         //displayController clearBoard to match.
         gameBoard.clearBoard();
         clearBoard();
+        gameFlow.resetLogic("Easy");
     })
+
+    return {placeAIMarker};
 }) ();
