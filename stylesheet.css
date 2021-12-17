@@ -15,7 +15,7 @@ body {
     height: 45px;
     background-color: purple;
     color: white;
-    border: 0;
+    border: 2px solid white;
     border-radius: 5px;
 }
 
@@ -38,7 +38,9 @@ body {
     justify-content: center;
     align-items: center;
     margin: 15px;
-    color: purple;
+    color: white;
+    text-shadow: 2px 2px purple;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
 }
 
 .gameBoard {
@@ -54,7 +56,8 @@ body {
 
 .square {
     background-color:black;
-    color: purple;
+    color: white;
+    text-shadow: 1px 1px purple;
     border-right: 4px solid white;
     border-bottom: 4px solid white;
     width: 116px;
