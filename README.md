@@ -6,12 +6,17 @@ The goal in this project is create a playable Tic-Tac-Toe game within a browser 
 
 There are three modules that house the logic:
 
-gameBoard - Keeps the array private and gives three public functions to access/modify it.
+gameBoard - Keeps the array private and gives 4 public functions to access/modify it.
 
-gameFlow - Deals with all gameplay logic. Has two public functions, checkPosition and checkForWin. Also houses three private functions that check the different win conditions: 3 in a row horizontally, vertically, or diagonally.
+gameFlow - Deals with all gameplay logic. Has nine public functions, and 7 private functions. The private functions deal with checking for wins in the rows, columns, and diagonals. In addition, a few of the private functions contain the logic for the AI, specifically the MiniMax algorithm and its helpers. The MiniMax algorithm analyses the current game state and all possible future states to find the best move possible for that game state. And to increase efficiency, I am using Alpha-Beta pruning to prevent analysing further worst case board states.
 
-displayController - Deals with the display in its entirety. All functions and members are private, and the only way the user can directly invoke one (placeMarker) is by playing the game and choosing a spot to place a marker.
+displayController - Deals with the display in its entirety. All members are private, and there is one public function to be used for the AI to place their marker when they select their position. Also contains a delay function to make it seem as though the computer is thinking before making their move.
 
-The game logic is tested and sound, with the game able to end in a tie, or have either player win in the three typical fashions.
 
-The final step is to create an AI to play against. It should have atleast 2 difficulties: Easy and Hard. Easy will see the AI place it's marker at a random available spot on the board, while the hard AI will use an algorithm to determine the best possible spot during that turn.
+The MiniMax algorithm is efficient and effective thanks to the alpha-beta pruning, and at best you can tie with the AI on the "Impossible" difficulty. Otherwise, the game can end in a tie or have either player win in PvP or the other AI difficulties.
+
+Future Considerations:
+
+- Score Board (Displays both user's marker's or one user's and the AI's)
+- Custom select dropdown (The options of the HTML select element cannot be styled with CSS)
+- Functionality to play as X or O.
