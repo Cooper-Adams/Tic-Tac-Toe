@@ -2,6 +2,8 @@
 
 Tic Tac Toe is a game where the board is 3x3 and the user is aiming to place three of their symbol in a row horizontally, vertically, or diagonally.
 
+Play it here: https://cooper-adams.github.io/Tic-Tac-Toe/
+
 The goal in this project is create a playable Tic-Tac-Toe game within a browser and the logic of the game is entirely within modules or factories.
 
 There are three modules that house the logic:
